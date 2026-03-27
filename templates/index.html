@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f9a8c9 0%, #ffcba4 50%, #ffecd2 100%);
+            font-family: 'Inter', sans-serif;
+            padding: 20px;
+        }
+
+        /* Soft blurry background blobs for depth */
+        body::before {
+            content: '';
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255,182,193,0.5), transparent 70%);
+            top: -100px;
+            left: -100px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255,218,185,0.5), transparent 70%);
+            bottom: -80px;
+            right: -80px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            border-radius: 24px;
+            padding: 52px 48px;
+            max-width: 540px;
+            width: 100%;
+            box-shadow:
+                0 8px 32px rgba(255, 100, 130, 0.12),
+                0 2px 8px rgba(255,255,255,0.3) inset;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow:
+                0 16px 48px rgba(255, 100, 130, 0.18),
+                0 2px 8px rgba(255,255,255,0.3) inset;
+        }
+
+        .label {
+            font-family: 'Inter', sans-serif;
+            font-size: 11px;
+            font-weight: 300;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: rgba(180, 80, 100, 0.7);
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 52px;
+            font-weight: 300;
+            color: #5a2533;
+            line-height: 1.1;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            font-weight: 300;
+            color: rgba(120, 60, 70, 0.6);
+            margin-bottom: 36px;
+            letter-spacing: 0.3px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 300;
+            background: rgba(255, 255, 255, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            border-radius: 12px;
+            outline: none;
+            color: #5a2533;
+            transition: all 0.3s ease;
+            letter-spacing: 0.3px;
+        }
+
+        input[type="text"]::placeholder {
+            color: rgba(180, 100, 120, 0.45);
+            font-weight: 300;
+        }
+
+        input[type="text"]:focus {
+            background: rgba(255, 255, 255, 0.65);
+            border-color: rgba(255, 150, 170, 0.6);
+            box-shadow: 0 0 0 4px rgba(255, 150, 170, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            font-size: 12px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, rgba(255,130,150,0.85), rgba(255,170,120,0.85));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, rgba(255,110,135,0.95), rgba(255,155,100,0.95));
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(255, 100, 130, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0px);
+        }
+
+        .result {
+            margin-top: 28px;
+            padding: 20px 24px;
+            background: rgba(255, 255, 255, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 14px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-label {
+            font-size: 10px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: rgba(180, 80, 100, 0.6);
+            margin-bottom: 8px;
+            font-weight: 300;
+        }
+
+        .result a {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 22px;
+            color: #5a2533;
+            text-decoration: none;
+            word-break: break-all;
+            transition: color 0.2s ease;
+        }
+
+        .result a:hover {
+            color: #ff6b9d;
+        }
+
+        .divider {
+            width: 40px;
+            height: 1px;
+            background: rgba(180, 80, 100, 0.25);
+            margin: 28px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <p class="label">Make it shorter</p>
+        <h1>URL<br>Shortener</h1>
+        <p class="subtitle">Paste a long link. Get something elegant.</p>
+
+        <div class="divider"></div>
+
+        <form method="POST" action="/">
+            <div class="input-wrapper">
+                <input
+                    type="text"
+                    name="url"
+                    placeholder="https://your-very-long-url.com/..."
+                    required
+                />
+            </div>
+            <button type="submit">Shorten</button>
+        </form>
+
+        {% if short_url %}
+        <div class="result">
+            <p class="result-label">Your shortened link</p>
+            <a href="{{ short_url }}" target="_blank">{{ short_url }}</a>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
